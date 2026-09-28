@@ -1,0 +1,362 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum SkillCategory {
+  TECHNICAL
+  TOOL
+  FRAMEWORK
+  SOFT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile              Profile?
+  education            Education?
+  skills               Skill[]
+  projects             Project[]
+  certifications       Certification[]
+  experiences          Experience[]
+  internships          Internship[]
+  achievements         Achievement[]
+  leadershipRoles      Leadership[]
+  hackathons           Hackathon[]
+  targets              TargetApplication[]
+  portfolios           Portfolio[]
+  analyses             ProfileAnalysis[]
+  preparedQuestions    PreparedQuestion[]
+  sessions             InterviewSession[]
+  feedbackReports      FeedbackReport[]
+  placementRecords     PlacementRecord[]     @relation("PlacementRecordUploader")
+  placementQuestions   PlacementQuestion[]   @relation("PlacementQuestionUploader")
+  placementExperiences PlacementExperience[] @relation("PlacementExperienceUploader")
+}
+
+model Profile {
+  id       String @id @default(cuid())
+  userId   String @unique
+  phone    String @default("")
+  location String @default("")
+  linkedin String @default("")
+  github   String @default("")
+  headline String @default("")
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id             String @id @default(cuid())
+  userId         String @unique
+  tenthPercent   Float?
+  twelfthPercent Float?
+  college        String @default("")
+  degree         String @default("")
+  branch         String @default("")
+  cgpa           Float?
+  graduationYear Int?
+  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id       String        @id @default(cuid())
+  userId   String
+  name     String
+  category SkillCategory
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Project {
+  id          String @id @default(cuid())
+  userId      String
+  name        String
+  description String @default("")
+  techStack   String @default("")
+  challenges  String @default("")
+  solution    String @default("")
+  impact      String @default("")
+  github      String @default("")
+  demoLink    String @default("")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Certification {
+  id            String @id @default(cuid())
+  userId        String
+  name          String
+  issuer        String @default("")
+  issuedOn      String @default("")
+  credentialUrl String @default("")
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Experience {
+  id          String @id @default(cuid())
+  userId      String
+  title       String
+  company     String @default("")
+  startDate   String @default("")
+  endDate     String @default("")
+  description String @default("")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Internship {
+  id          String @id @default(cuid())
+  userId      String
+  title       String
+  company     String @default("")
+  startDate   String @default("")
+  endDate     String @default("")
+  description String @default("")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  userId      String
+  title       String
+  description String @default("")
+  year        String @default("")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Leadership {
+  id           String @id @default(cuid())
+  userId       String
+  role         String
+  organization String @default("")
+  description  String @default("")
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Hackathon {
+  id          String @id @default(cuid())
+  userId      String
+  name        String
+  result      String @default("")
+  description String @default("")
+  projectName String @default("")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TargetApplication {
+  id            String   @id @default(cuid())
+  userId        String
+  company       String
+  role          String
+  interviewType String
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  userId    String
+  slug      String   @unique
+  theme     String   @default("signal")
+  company   String   @default("")
+  role      String   @default("")
+  summary   String
+  about     String
+  sections  Json
+  isPublic  Boolean  @default(true)
+  stamp     String   @default("")
+  engine    String   @default("builtin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlacementRecord {
+  id             String   @id @default(cuid())
+  company        String
+  role           String
+  year           Int?
+  college        String   @default("")
+  selectedSkills String   @default("")
+  notes          String   @default("")
+  uploadedById   String?
+  createdAt      DateTime @default(now())
+  uploadedBy     User?    @relation("PlacementRecordUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([company, role])
+}
+
+model PlacementQuestion {
+  id           String   @id @default(cuid())
+  company      String
+  role         String
+  roundType    String
+  question     String
+  topic        String
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  uploadedBy   User?    @relation("PlacementQuestionUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([company, role])
+}
+
+model PlacementExperience {
+  id           String   @id @default(cuid())
+  company      String
+  role         String
+  roundType    String   @default("")
+  experience   String
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  uploadedBy   User?    @relation("PlacementExperienceUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([company, role])
+}
+
+model CompanyInsight {
+  id        String   @id @default(cuid())
+  company   String
+  role      String
+  stamp     String
+  payload   Json
+  summary   String
+  engine    String   @default("builtin")
+  updatedAt DateTime @updatedAt
+
+  @@unique([company, role])
+}
+
+model PreparedQuestion {
+  id            String   @id @default(cuid())
+  userId        String
+  company       String
+  role          String
+  interviewType String
+  text          String
+  source        String
+  rationale     String
+  stamp         String   @default("")
+  engine        String   @default("builtin")
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, company, role])
+}
+
+model ProfileAnalysis {
+  id               String   @id @default(cuid())
+  userId           String
+  company          String
+  role             String
+  interviewType    String
+  strengths        Json
+  weakAreas        Json
+  focusAreas       Json
+  portfolioSummary String
+  readinessSummary String
+  stamp            String   @default("")
+  engine           String   @default("builtin")
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model InterviewSession {
+  id        String    @id @default(cuid())
+  userId    String
+  mode      String
+  company   String
+  role      String
+  status    String    @default("active")
+  engine    String    @default("builtin")
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions InterviewQuestion[]
+  report    FeedbackReport?
+
+  @@index([userId])
+}
+
+model InterviewQuestion {
+  id        String           @id @default(cuid())
+  sessionId String
+  order     Int
+  text      String
+  source    String
+  askedAt   DateTime         @default(now())
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answer    InterviewAnswer?
+
+  @@index([sessionId])
+}
+
+model InterviewAnswer {
+  id         String            @id @default(cuid())
+  questionId String            @unique
+  text       String
+  answeredAt DateTime          @default(now())
+  question   InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model FeedbackReport {
+  id              String           @id @default(cuid())
+  userId          String
+  sessionId       String           @unique
+  strengths       Json
+  weaknesses      Json
+  technicalDepth  Int
+  communication   Int
+  problemSolving  Int              @default(0)
+  confidence      Int              @default(0)
+  missingConcepts Json
+  suggestions     Json
+  readinessScore  Int
+  narrative       String           @default("")
+  engine          String           @default("builtin")
+  createdAt       DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session         InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
