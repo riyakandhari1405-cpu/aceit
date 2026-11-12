@@ -26,7 +26,7 @@ AceIT brings portfolio building, placement intelligence, and AI-powered intervie
 - **Backend:** Next.js API Routes
 - **Database:** PostgreSQL, Neon
 - **Deployment:** Vercel
-- **Tools:** Git, GitHub, Cursor
+- **Tools:** Git, GitHub, Cursor.
 
 Create a `.env.local` file and configure the required environment variables:
 
